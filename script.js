@@ -1,50 +1,83 @@
+JavaScript
 let pokemonMap = new Map();
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadCSV();
+  loadPokemonData();
 });
 
-function loadCSV() {
-  Papa.parse("pokemon.csv", {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      processPokemonData(results.data);
-      populateDropdown();
-    },
-    error: (err) => {
+function loadPokemonData() {
+  fetch("pokemon.csv")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Could not fetch pokemon.csv");
+      }
+      return response.text();
+    })
+    .then((csvText) => {
+      parseAndProcessCSV(csvText);
+    })
+    .catch((err) => {
       console.error("Error loading CSV:", err);
-      alert("Could not load pokemon.csv. If opening directly in a browser, please use VS Code Live Server or host on GitHub Pages.");
-    }
-  });
+      showError("Failed to load pokemon.csv");
+    });
 }
 
-function processPokemonData(data) {
-  data.forEach((row) => {
-    if (!row.id || !row.pokemon) return;
+function parseAndProcessCSV(text) {
+  const lines = text.split("\n");
+  if (lines.length < 2) {
+    showError("CSV file is empty or corrupted.");
+    return;
+  }
+
+  // Get headers from first line
+  const headers = lines[0].split(",").map((h) => h.trim());
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const values = line.split(",");
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] ? values[index].trim() : "";
+    });
+
+    const id = parseInt(row.id, 10);
+    const name = row.pokemon;
+
+    if (isNaN(id) || !name) continue;
+
+    const hp = parseInt(row.hp, 10) || 0;
+    const attack = parseInt(row.attack, 10) || 0;
+    const defense = parseInt(row.defense, 10) || 0;
+    const spAtk = parseInt(row.special_attack, 10) || 0;
+    const spDef = parseInt(row.special_defense, 10) || 0;
+    const speed = parseInt(row.speed, 10) || 0;
 
     const pokemon = {
-      id: parseInt(row.id, 10),
-      name: row.pokemon.trim(),
-      speciesId: parseInt(row.species_id, 10),
-      type1: row.type_1 || '',
-      type2: row.type_2 && row.type_2 !== 'NA' ? row.type_2 : null,
-      hp: parseInt(row.hp, 10) || 0,
-      attack: parseInt(row.attack, 10) || 0,
-      defense: parseInt(row.defense, 10) || 0,
-      spAtk: parseInt(row.special_attack, 10) || 0,
-      spDef: parseInt(row.special_defense, 10) || 0,
-      speed: parseInt(row.speed, 10) || 0
+      id: id,
+      name: name,
+      type1: row.type_1 || "",
+      type2: row.type_2 && row.type_2 !== "NA" ? row.type_2 : null,
+      hp: hp,
+      attack: attack,
+      defense: defense,
+      spAtk: spAtk,
+      spDef: spDef,
+      speed: speed,
+      bst: hp + attack + defense + spAtk + spDef + speed
     };
 
-    pokemon.bst = pokemon.hp + pokemon.attack + pokemon.defense + pokemon.spAtk + pokemon.spDef + pokemon.speed;
     pokemonMap.set(pokemon.id, pokemon);
-  });
+  }
+
+  populateDropdown();
 }
 
 function populateDropdown() {
   const select = document.getElementById("pokemon-select");
+  if (!select) return;
+
   select.innerHTML = '<option value="">-- Select a Pokémon --</option>';
 
   const sortedList = Array.from(pokemonMap.values()).sort((a, b) => a.id - b.id);
@@ -57,14 +90,15 @@ function populateDropdown() {
   });
 
   select.disabled = false;
-  select.addEventListener("change", (e) => {
+  select.onchange = (e) => {
     const selectedId = parseInt(e.target.value, 10);
-    if (selectedId) {
+    if (!isNaN(selectedId)) {
       displayDecision(selectedId);
     } else {
-      document.getElementById("result-card").classList.add("hidden");
+      const card = document.getElementById("result-card");
+      if (card) card.classList.add("hidden");
     }
-  });
+  };
 }
 
 function displayDecision(id) {
@@ -76,16 +110,16 @@ function displayDecision(id) {
   const verdictTitle = document.getElementById("verdict-title");
   const verdictDesc = document.getElementById("verdict-description");
 
-  // Load image sprite directly from PokeAPI GitHub repository
+  // Fetch official sprite from PokeAPI GitHub repository
   const imgElement = document.getElementById("pokemon-image");
   imgElement.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${current.id}.png`;
 
   document.getElementById("pokemon-name").textContent = `#${current.id} ${capitalize(current.name)}`;
-  document.getElementById("pokemon-types").textContent = current.type2 
+  document.getElementById("pokemon-types").textContent = current.type2
     ? `Type: ${capitalize(current.type1)} / ${capitalize(current.type2)}`
     : `Type: ${capitalize(current.type1)}`;
 
-  // Set stats
+  // Populate numerical base stats
   document.getElementById("stat-bst").textContent = current.bst;
   document.getElementById("stat-hp").textContent = current.hp;
   document.getElementById("stat-atk").textContent = current.attack;
@@ -94,11 +128,11 @@ function displayDecision(id) {
   document.getElementById("stat-spdef").textContent = current.spDef;
   document.getElementById("stat-spd").textContent = current.speed;
 
-  // Next species in ID sequence check (Sequential evolution fallback)
+  // Next evolution sequence check
   const nextPokemon = pokemonMap.get(current.id + 1);
 
-  // Evolution decision logic based on stat growth and ID placement
-  if (nextPokemon && current.bst < 450 && nextPokemon.bst > current.bst) {
+  // Recommendation logic based on Base Stat Total comparison
+  if (nextPokemon && current.bst < 480 && nextPokemon.bst > current.bst) {
     const diff = nextPokemon.bst - current.bst;
     verdictBox.className = "verdict-box yes";
     verdictTitle.textContent = `YES! Evolve into ${capitalize(nextPokemon.name)}`;
@@ -106,12 +140,19 @@ function displayDecision(id) {
   } else {
     verdictBox.className = "verdict-box no";
     verdictTitle.textContent = "NO! Do Not Evolve";
-    verdictDesc.textContent = `${capitalize(current.name)} has strong stats (BST: ${current.bst}) or is already at its final form. Save your candies!`;
+    verdictDesc.textContent = `${capitalize(current.name)} is already at its final stage or has strong base stats (BST: ${current.bst}).`;
   }
 
   card.classList.remove("hidden");
 }
 
 function capitalize(str) {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+}
+
+function showError(msg) {
+  const select = document.getElementById("pokemon-select");
+  if (select) {
+    select.innerHTML = `<option value="">Error: ${msg}</option>`;
+  }
 }
