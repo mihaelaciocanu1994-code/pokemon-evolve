@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Should I Evolve This Pokémon?</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.min.js" integrity="sha512-4UqI7n27iC6aYxHnNkW6v8P+F23lP+JzQ8eC2pE/yS/f8J/6Vq/vKk4fOqJm+zJ89O9rZJ5S3zDkK8g0+w4O2Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Should I Evolve This Pokémon?</h1>
+      <p>Select a Pokémon from your database to see if it can and should be evolved!</p>
+    </header>
+
+    <main>
+      <section class="search-section">
+        <label for="pokemon-select">Choose a Pokémon:</label>
+        <select id="pokemon-select" disabled>
+          <option value="">Loading Pokémon data...</option>
+        </select>
+      </section>
+
+      <section id="result-card" class="result-card hidden">
+        <div class="pokemon-header">
+          <img id="pokemon-image" src="" alt="Pokémon Sprite" />
+          <div>
+            <h2 id="pokemon-name"></h2>
+            <p id="pokemon-types" class="types"></p>
+          </div>
+        </div>
+
+        <div id="verdict-box" class="verdict-box">
+          <h3 id="verdict-title"></h3>
+          <p id="verdict-description"></p>
+        </div>
+
+        <div class="stats-container">
+          <h3>Base Stats (BST: <span id="stat-bst"></span>)</h3>
+          <div class="stat-grid">
+            <div class="stat-item"><span>HP:</span> <strong id="stat-hp"></strong></div>
+            <div class="stat-item"><span>Attack:</span> <strong id="stat-atk"></strong></div>
+            <div class="stat-item"><span>Defense:</span> <strong id="stat-def"></strong></div>
+            <div class="stat-item"><span>Sp. Atk:</span> <strong id="stat-spatk"></strong></div>
+            <div class="stat-item"><span>Sp. Def:</span> <strong id="stat-spdef"></strong></div>
+            <div class="stat-item"><span>Speed:</span> <strong id="stat-spd"></strong></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
