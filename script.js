@@ -1,4 +1,3 @@
-JavaScript
 let pokemonMap = new Map();
 
 document.addEventListener("DOMContentLoaded", () => {
