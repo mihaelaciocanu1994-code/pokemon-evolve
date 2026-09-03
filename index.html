@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A PokéAPI-powered evolution advisor that helps you decide whether to evolve a Pokémon.">
+  <title>Pokémon Evolution Advisor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="Pokémon Evolution Advisor home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Evolution Advisor</span>
+      </a>
+      <span class="api-label">Powered by PokéAPI</span>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">Pokémon decision helper</p>
+      <h1 id="page-title">Should I evolve this Pokémon?</h1>
+      <p class="hero-copy">Search by name or National Dex number. We’ll check the next evolution, its requirements, and how much its base stats improve.</p>
+
+      <form id="search-form" class="search-panel" novalidate>
+        <div class="field-group search-field">
+          <label for="pokemon-input">Pokémon name or Dex number</label>
+          <div class="input-with-button">
+            <input id="pokemon-input" name="pokemon" type="search" placeholder="e.g. Eevee or 133" autocomplete="off" required>
+            <button class="primary-button" type="submit">Check Pokémon</button>
+          </div>
+        </div>
+
+        <div class="field-group level-field">
+          <label for="level-input">Current level <span>(optional)</span></label>
+          <input id="level-input" name="level" type="number" min="1" max="100" inputmode="numeric" placeholder="e.g. 25">
+          <p class="field-help">Used to automatically check level-based evolution requirements.</p>
+        </div>
+      </form>
+
+      <div class="quick-picks" aria-label="Quick pick Pokémon examples">
+        <span>Quick picks:</span>
+        <button type="button" class="quick-pick" data-pokemon="bulbasaur">Bulbasaur</button>
+        <button type="button" class="quick-pick" data-pokemon="eevee">Eevee</button>
+        <button type="button" class="quick-pick" data-pokemon="pikachu">Pikachu</button>
+        <button type="button" class="quick-pick" data-pokemon="tyrogue">Tyrogue</button>
+      </div>
+    </section>
+
+    <section id="status-region" class="status-region" aria-live="polite">
+      <div id="empty-state" class="state-card">
+        <div class="state-icon" aria-hidden="true">?</div>
+        <h2>Choose a Pokémon to begin</h2>
+        <p>The advisor will show its stats, evolution options, requirements, and a clear verdict.</p>
+      </div>
+
+      <div id="loading-state" class="state-card hidden" role="status">
+        <div class="pokeball-loader" aria-hidden="true"></div>
+        <h2>Checking evolution data…</h2>
+        <p>Fetching Pokémon, species, and evolution-chain details from PokéAPI.</p>
+      </div>
+
+      <div id="error-state" class="state-card error-card hidden" role="alert">
+        <div class="state-icon error-icon" aria-hidden="true">!</div>
+        <h2 id="error-title">Something went wrong</h2>
+        <p id="error-message">Please try again.</p>
+      </div>
+    </section>
+
+    <section id="results" class="results hidden" aria-live="polite">
+      <div id="verdict-card" class="verdict-card"></div>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Current Pokémon</p>
+          <h2>What you have now</h2>
+        </div>
+      </div>
+      <div id="current-pokemon"></div>
+
+      <div id="evolution-section">
+        <div class="section-heading evolution-heading">
+          <div>
+            <p class="eyebrow">Next step</p>
+            <h2>Evolution options</h2>
+          </div>
+          <p id="evolution-count" class="section-note"></p>
+        </div>
+        <div id="evolution-options" class="evolution-grid"></div>
+      </div>
+
+      <aside class="tip-card">
+        <span class="tip-icon" aria-hidden="true">i</span>
+        <div>
+          <h2>Before you evolve</h2>
+          <p>Evolving usually raises base stats, but in some games an unevolved Pokémon may learn certain level-up moves earlier. Move availability varies by game, so check your game’s learnset if a particular move matters to you.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Data from <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a>. Pokémon names and artwork belong to their respective owners.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
